@@ -22,7 +22,6 @@ namespace MathTricks
 
             return cell.ToString();
         }
-
         public Cell(int width, int height, bool captured, ConsoleColor color, char operation, int number)
         {
 			AdjeicentCells = new List<Cell>();
@@ -33,7 +32,6 @@ namespace MathTricks
 			Operation = operation;
             Number = number;
         }
-
         public int Width
 		{
 			get { return width; }

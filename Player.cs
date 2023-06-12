@@ -8,19 +8,20 @@ namespace MathTricks
         private string name;
         private ConsoleColor color;
         private double score;
+        private int wins;
         private Cell currCell;
         private Cell selectedCell;
 
-        public Player(string name, ConsoleColor color)
+        public Player(string name, ConsoleColor color, double score)
         {
             this.Name = name;
             this.Color = color;
-            Score = 10;
+            this.Score = score;
+            this.Wins = 0;
         }
-        public Player() { }
         public bool HasNoMoreViableMoves()
         {
-            return currCell.AdjeicentCells.All(x => x.Captured);
+            return CurrCell.AdjeicentCells.All(x => x.Captured);
         }
         public bool HasSurrendered(ConsoleKey key)
         {
@@ -31,171 +32,60 @@ namespace MathTricks
             switch (key)
             {
                 case ConsoleKey.NumPad1://left down diagonal
-                    selectedCell = currCell.AdjeicentCells
-                        .FirstOrDefault(x => x.Width == currCell.Width - 5 && x.Height == currCell.Height + 2);
+                    SelectedCell = CurrCell.AdjeicentCells
+                        .FirstOrDefault(x => x.Width == CurrCell.Width - 5 && x.Height == CurrCell.Height + 2);
 
-                    if (selectedCell is null || selectedCell.Captured) return false;
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(currCell.Width, currCell.Height);
-                    Console.Write(currCell.Operation.ToString() + currCell.Number.ToString());
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.SetCursorPosition(selectedCell.Width, selectedCell.Height);
-                    Console.Write(selectedCell.Operation.ToString() + selectedCell.Number.ToString());
-                    Console.ResetColor();
-                    selectedCell.Captured = true;
-                    AdjustScore(selectedCell.Operation, selectedCell.Number);
-                    currCell = selectedCell;
-                    return true;
+                    if (Move()) return true;
+                    else return false;
 
                 case ConsoleKey.NumPad2://down straight
-                    selectedCell = currCell.AdjeicentCells
-                        .FirstOrDefault(x => x.Width == currCell.Width && x.Height == currCell.Height + 2);
+                    SelectedCell = CurrCell.AdjeicentCells
+                        .FirstOrDefault(x => x.Width == CurrCell.Width && x.Height == CurrCell.Height + 2);
 
-                    if (selectedCell is null || selectedCell.Captured) return false;
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(currCell.Width, currCell.Height);
-                    Console.Write(currCell.Operation.ToString() + currCell.Number.ToString());
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.SetCursorPosition(selectedCell.Width, selectedCell.Height);
-                    Console.Write(selectedCell.Operation.ToString() + selectedCell.Number.ToString());
-                    Console.ResetColor();
-                    selectedCell.Captured = true;
-                    AdjustScore(selectedCell.Operation, selectedCell.Number);
-                    currCell = selectedCell;
-                    return true;
+                    if (Move()) return true;
+                    else return false;
 
                 case ConsoleKey.NumPad3://right down diagonal
-                    selectedCell = currCell.AdjeicentCells
-                        .FirstOrDefault(x => x.Width == currCell.Width + 5 && x.Height == currCell.Height + 2);
+                    SelectedCell = CurrCell.AdjeicentCells
+                        .FirstOrDefault(x => x.Width == CurrCell.Width + 5 && x.Height == CurrCell.Height + 2);
 
-                    if (selectedCell is null || selectedCell.Captured) return false;
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(currCell.Width, currCell.Height);
-                    Console.Write(currCell.Operation.ToString() + currCell.Number.ToString());
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.SetCursorPosition(selectedCell.Width, selectedCell.Height);
-                    Console.Write(selectedCell.Operation.ToString() + selectedCell.Number.ToString());
-                    Console.ResetColor();
-                    selectedCell.Captured = true;
-                    AdjustScore(selectedCell.Operation, selectedCell.Number);
-                    currCell = selectedCell;
-                    return true;
+                    if (Move()) return true;
+                    else return false;
 
                 case ConsoleKey.NumPad4://left side
-                    selectedCell = currCell.AdjeicentCells
-                        .FirstOrDefault(x => x.Width == currCell.Width - 5 && x.Height == currCell.Height);
+                    SelectedCell = CurrCell.AdjeicentCells
+                        .FirstOrDefault(x => x.Width == CurrCell.Width - 5 && x.Height == CurrCell.Height);
 
-                    if (selectedCell is null || selectedCell.Captured) return false;
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(currCell.Width, currCell.Height);
-                    Console.Write(currCell.Operation.ToString() + currCell.Number.ToString());
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.SetCursorPosition(selectedCell.Width, selectedCell.Height);
-                    Console.Write(selectedCell.Operation.ToString() + selectedCell.Number.ToString());
-                    Console.ResetColor();
-                    selectedCell.Captured = true;
-                    AdjustScore(selectedCell.Operation, selectedCell.Number);
-                    currCell = selectedCell;
-                    return true;
+                    if (Move()) return true;
+                    else return false;
 
                 case ConsoleKey.NumPad6://right side
-                    selectedCell = currCell.AdjeicentCells
-                        .FirstOrDefault(x => x.Width == currCell.Width + 5 && x.Height == currCell.Height);
+                    SelectedCell = CurrCell.AdjeicentCells
+                        .FirstOrDefault(x => x.Width == CurrCell.Width + 5 && x.Height == CurrCell.Height);
 
-                    if (selectedCell is null || selectedCell.Captured) return false;
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(currCell.Width, currCell.Height);
-                    Console.Write(currCell.Operation.ToString() + currCell.Number.ToString());
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.SetCursorPosition(selectedCell.Width, selectedCell.Height);
-                    Console.Write(selectedCell.Operation.ToString() + selectedCell.Number.ToString());
-                    Console.ResetColor();
-                    selectedCell.Captured = true;
-                    AdjustScore(selectedCell.Operation, selectedCell.Number);
-                    currCell = selectedCell;
-                    return true;
+                    if (Move()) return true;
+                    else return false;
 
                 case ConsoleKey.NumPad7://left up diagonal
-                    selectedCell = currCell.AdjeicentCells
-                        .FirstOrDefault(x => x.Width == currCell.Width - 5 && x.Height == currCell.Height - 2);
+                    SelectedCell = CurrCell.AdjeicentCells
+                        .FirstOrDefault(x => x.Width == CurrCell.Width - 5 && x.Height == CurrCell.Height - 2);
 
-                    if (selectedCell is null || selectedCell.Captured) return false;
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(currCell.Width, currCell.Height);
-                    Console.Write(currCell.Operation.ToString() + currCell.Number.ToString());
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.SetCursorPosition(selectedCell.Width, selectedCell.Height);
-                    Console.Write(selectedCell.Operation.ToString() + selectedCell.Number.ToString());
-                    Console.ResetColor();
-                    selectedCell.Captured = true;
-                    AdjustScore(selectedCell.Operation, selectedCell.Number);
-                    currCell = selectedCell;
-                    return true;
+                    if (Move()) return true;
+                    else return false;
 
                 case ConsoleKey.NumPad8://straight up
-                    selectedCell = currCell.AdjeicentCells
-                        .FirstOrDefault(x => x.Width == currCell.Width && x.Height == currCell.Height - 2);
+                    SelectedCell = CurrCell.AdjeicentCells
+                        .FirstOrDefault(x => x.Width == CurrCell.Width && x.Height == CurrCell.Height - 2);
 
-                    if (selectedCell is null || selectedCell.Captured) return false;
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(currCell.Width, currCell.Height);
-                    Console.Write(currCell.Operation.ToString() + currCell.Number.ToString());
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.SetCursorPosition(selectedCell.Width, selectedCell.Height);
-                    Console.Write(selectedCell.Operation.ToString() + selectedCell.Number.ToString());
-                    Console.ResetColor();
-                    selectedCell.Captured = true;
-                    AdjustScore(selectedCell.Operation, selectedCell.Number);
-                    currCell = selectedCell;
-                    return true;
+                    if (Move()) return true;
+                    else return false;
 
                 case ConsoleKey.NumPad9://right up diagonal
-                    selectedCell = currCell.AdjeicentCells
-                        .FirstOrDefault(x => x.Width == currCell.Width + 5 && x.Height == currCell.Height - 2);
+                    SelectedCell = CurrCell.AdjeicentCells
+                        .FirstOrDefault(x => x.Width == CurrCell.Width + 5 && x.Height == CurrCell.Height - 2);
 
-                    if (selectedCell is null || selectedCell.Captured) return false;
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.White;
-                    Console.SetCursorPosition(currCell.Width, currCell.Height);
-                    Console.Write(currCell.Operation.ToString() + currCell.Number.ToString());
-
-                    Console.BackgroundColor = Color;
-                    Console.ForegroundColor = ConsoleColor.Black;
-                    Console.SetCursorPosition(selectedCell.Width, selectedCell.Height);
-                    Console.Write(selectedCell.Operation.ToString() + selectedCell.Number.ToString());
-                    Console.ResetColor();
-                    selectedCell.Captured = true;
-                    AdjustScore(selectedCell.Operation, selectedCell.Number);
-                    currCell = selectedCell;
-                    return true;
+                    if (Move()) return true;
+                    else return false;
 
                 default:
                     return false;
@@ -219,10 +109,29 @@ namespace MathTricks
                     break;
             }
         }
+        private bool Move()
+        {
+            if (SelectedCell is null || SelectedCell.Captured) return false;
+
+            Console.BackgroundColor = Color;
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.SetCursorPosition(CurrCell.Width, CurrCell.Height);
+            Console.Write(CurrCell.Operation.ToString() + CurrCell.Number.ToString());
+
+            Console.BackgroundColor = Color;
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.SetCursorPosition(SelectedCell.Width, SelectedCell.Height);
+            Console.Write(SelectedCell.Operation.ToString() + SelectedCell.Number.ToString());
+            Console.ResetColor();
+            SelectedCell.Captured = true;
+            AdjustScore(SelectedCell.Operation, SelectedCell.Number);
+            CurrCell = SelectedCell;
+            return true;
+        }
         public void SetStartPosition(Cell cell)
         {
             Console.SetCursorPosition(cell.Width, cell.Height);
-            currCell = cell;
+            CurrCell = cell;
             Console.BackgroundColor = Color;
             Console.Write("p" + Name.Last());
             Console.ResetColor();
@@ -236,6 +145,11 @@ namespace MathTricks
         {
             get { return selectedCell; }
             set { selectedCell = value; }
+        }
+        public int Wins
+        {
+            get { return wins; }
+            set { wins = value; }
         }
         public double Score
         {
