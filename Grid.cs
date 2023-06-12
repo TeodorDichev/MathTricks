@@ -9,7 +9,6 @@ namespace MathTricks
     {
 		private int width;
 		private int height;
-        private List<Player> players;
         private List<Cell> cells;
 
         public Grid()
@@ -18,7 +17,6 @@ namespace MathTricks
             Width = dimensions[0];
             Height = dimensions[1];
 
-            Players = new List<Player>();
             Cells = new List<Cell>();
         }
         public void ManageAdjecentCells()
@@ -146,24 +144,7 @@ namespace MathTricks
             string operations = "+-/*";
             Random r = new Random();
 
-            for (int i = Width-1; i > 0; i--)
-            {
-                Cell cell = new Cell
-                    (1 + 5 * (Width - i), 
-                     1, 
-                    false,
-                    ConsoleColor.DarkGray, 
-                    operations[r.Next(0, 4)], 
-                    r.Next(1, 6));
-
-                Cells.Add(cell);
-                Console.BackgroundColor = cell.Color;
-                Console.Write(cell.ToString());
-                Console.ResetColor();
-            }// first row
-
-            for (int j = Height-1; j > 1; j--)
-            {
+            for (int j = Height; j > 0; j--)
                 for (int i = Width; i > 0; i--)
                 {
                     Cell cell = new Cell
@@ -179,36 +160,21 @@ namespace MathTricks
                     Console.Write(cell.ToString());
                     Console.ResetColor();
                 }
-            }// middle rows
-
-            for (int i = Width; i > 1; i--)
-            {
-                Cell cell = new Cell
-                    (1 + 5 * (Width - i),
-                    1 + 2 * (Height - 1),
-                    false,
-                    ConsoleColor.DarkGray,
-                    operations[r.Next(0, 4)],
-                    r.Next(1, 6));
-
-                Cells.Add(cell);
-
-                Console.BackgroundColor = cell.Color;
-                Console.Write(cell.ToString());
-                Console.ResetColor();
-            }// last row
         }
-        public void AddPlayers(Player player1, Player player2)
+        public void AddPlayers(List<Player> players)
         {
-            Players.Add(player1);
-            Cell cell1 = new Cell(1, 1, true, player1.Color, '+', 0);
-            player1.SetStartPosition(cell1);
-            Cells.Insert(0, cell1);
-
-            Players.Add(player2);
-            Cell cell2 = new Cell(1 + 5 * (Width - 1), 1 + 2 * (Height - 1), true, player2.Color, '+', 0);
-            player2.SetStartPosition(cell2);
-            Cells.Insert(Width*Height-1, cell2);
+            if (Game.playersCount == 2)
+            {
+                Game.players[0].SetStartPosition(cells[0]);
+                Game.players[1].SetStartPosition(cells[width * height - 1]);
+            }
+            else
+            {
+                Game.players[0].SetStartPosition(cells[0]);
+                Game.players[1].SetStartPosition(cells[width - 1]);
+                Game.players[2].SetStartPosition(cells[width * (height - 1)]);
+                Game.players[3].SetStartPosition(cells[width * height - 1]);
+            }
         }
         public override string ToString()
         {
@@ -244,8 +210,7 @@ namespace MathTricks
                 Console.Clear();
                 try
                 {
-                    Console.WriteLine("Welcome to the game!");
-                    Console.WriteLine("The width and the height of the grid should be positive numbers above 2 and below 24\n");
+                    Console.WriteLine("Enter grid dimensions (3-12)");
                     Console.Write("Grid width: ");
                     width = int.Parse(Console.ReadLine());
                     Console.Write("Grid height: ");
@@ -255,7 +220,7 @@ namespace MathTricks
                 {
                     invalidInput = true;
                 }
-                if (!invalidInput && (width < 3 || height < 3 || width > 23 || height > 23))
+                if (!invalidInput && (width < 3 || height < 3 || width > 12 || height > 12))
                 {
                     invalidInput = true;
                 }
@@ -271,11 +236,6 @@ namespace MathTricks
         {
 			get { return height; }
 			set { height = value; }
-		}
-		public List<Player> Players
-        {
-			get { return players; }
-			set { players = value; }
 		}
 		public List<Cell> Cells
         {

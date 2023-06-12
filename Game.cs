@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
+using System.Linq;
 
 namespace MathTricks
 {
     static public class Game
     {
-        private static Player player1 = new Player("player1", ConsoleColor.Red, initialScore);
-        private static Player player2 = new Player("player2", ConsoleColor.Blue, initialScore);
         private static Grid grid;
+        public static List<Player> players = new List<Player>();
         private static int turn = 0;
         private static int game = 1;
-        private const int initialScore = 10;
+        public static int initialScore;
+        public static int playersCount;
 
         static public void Run()
         {
@@ -18,81 +21,59 @@ namespace MathTricks
             Console.WriteLine(grid.ToString());
 
             grid.FillGrid();
-            grid.AddPlayers(player1, player2);
+            grid.AddPlayers(players);
             grid.ManageAdjecentCells();
 
-            while (true) // actual game loop
+            while (true)// actual game loop
             {
                 turn++;
-                do
+                for (int i = 0; i < playersCount; i++)
                 {
-                    PrintTurnText(player1);
-                    ConsoleKey key = Console.ReadKey(true).Key;
-                    if (player1.HasSurrendered(key)) PrintGameSummary(player2, player1, $"{player1.Name} has surrendered");
-                    if (player1.TakeTurn(key)) break;
-                } while (true);
+                    if (players.Where(p => p.Surrendered || p.HasNoMoreViableMoves()).ToList().Count >= playersCount - 1)
+                        PrintGameSummary(GetWinner(), players.Where(p => p != GetWinner()).ToList());
 
-                //In case after the first player has made their turn and has blocked the moves of the other player
-                //GameHasFinished() does not work because it will not allow the second player to make their last move
-                if (player2.HasNoMoreViableMoves()) PrintGameSummary(GetWinner(), GetLoser(), GetGameEndReason());
-
-                do
-                {
-                    PrintTurnText(player2);
-                    ConsoleKey key = Console.ReadKey(true).Key;
-                    if (player2.HasSurrendered(key)) PrintGameSummary(player1, player2, $"{player2.Name} has surrendered");
-                    if (player2.TakeTurn(key)) break;
-                } while (true);
-
-                if (GameHasFinished()) PrintGameSummary(GetWinner(), GetLoser(), GetGameEndReason());
+                    PrintTurnText(players[i]);
+                    if (players[i].Surrendered || players[i].HasNoMoreViableMoves()) continue;
+                    else players[i].TakeTurn(Console.ReadKey(true).Key);
+                }
             }
         }
-        static string GetGameEndReason()
-        {
-            // both players don't have any viable moves on this turn and we must compare their score to decide the winner
-            if (player1.HasNoMoreViableMoves() && player2.HasNoMoreViableMoves()) return "Score victory";
-            else if (player2.HasNoMoreViableMoves()) return $"{player2.Name} is stuck";// the second player is stuck
-            else if (player1.HasNoMoreViableMoves()) return $"{player1.Name} is stuck";// the first player is stuck
-
-            else return null;// this code should never be reached
-        }
-        static void PrintGameSummary(Player winner, Player loser, string reason)
+        public static void PrintGameSummary(Player winner, List<Player> losers)
         {
             Console.SetCursorPosition(0, grid.Height * 2 + 2);
             Console.WriteLine("---------- GAME SUMMARY ----------" + new string(' ', 75));
             Console.WriteLine($"WINNER: {winner.Name} [{winner.Score:f2}]" + new string(' ', 75));
-            Console.WriteLine($"LOSER: {loser.Name} [{loser.Score:f2}]" + new string(' ', 75));
-            Console.WriteLine(reason + new string(' ', 75));
+            for (int i = 0; i < losers.Count; i++) Console.WriteLine($"LOSER: {losers[i].Name} [{losers[i].Score:f2}]" + new string(' ', 75));
             Console.WriteLine($"TURNS: {turn}" + new string(' ', 100));
             Console.WriteLine(new string(' ', 100));
             Console.WriteLine($"NEW GAME? CLICK ENTER TO TRY AGAIN!" + new string(' ', 200));
             Console.WriteLine(new string(' ', 150));
             if (Console.ReadKey(true).Key == ConsoleKey.Enter)
             {
-                player1.Score = initialScore;
-                player2.Score = initialScore;
+                for (int i = 0; i < playersCount; i++) players[i].Score = initialScore;
                 turn = 0;
                 game++;
                 Run();
             }
             else Environment.Exit(0);
         }
-        static void PrintTurnText(Player player)
+        public static void PrintTurnText(Player player)
         {
             Console.SetCursorPosition(0, 2 * grid.Height + 2);
             Console.Write($"Game: {game} [");
-            Console.BackgroundColor = player1.Color;
-            Console.Write($"{player1.Wins}");
-            Console.ResetColor();
-            Console.Write($":");
-            Console.BackgroundColor = player2.Color;
-            Console.Write($"{player2.Wins}");
-            Console.ResetColor();
-            Console.WriteLine($"]| Turn: {turn}");
-            Console.BackgroundColor = player1.Color;
-            Console.WriteLine($"{player1.Name}'s score is {player1.Score:f2}  ");
-            Console.BackgroundColor = player2.Color;
-            Console.WriteLine($"{player2.Name}'s score is {player2.Score:f2}  ");
+            for (int i = 0; i < playersCount; i++)
+            {
+                Console.BackgroundColor = players[i].Color;
+                Console.Write($"{players[i].Wins}");
+                Console.ResetColor();
+                if (i!=playersCount-1) Console.Write($":");
+            }
+            Console.WriteLine($"] Turn: {turn}");
+            for (int i = 0; i < playersCount; i++)
+            {
+                Console.BackgroundColor = players[i].Color;
+                Console.WriteLine($"{players[i].Name}'s score is {players[i].Score:f2}  ");
+            }
             Console.ResetColor();
             Console.BackgroundColor = player.Color;
             Console.WriteLine($"\nWaiting for {player.Name}...");
@@ -101,38 +82,57 @@ namespace MathTricks
             Console.WriteLine($"NumPad 7 - up left diagonal   | NumPad 8 - up   | NumPad 9 - up right diagonal  ");
             Console.ResetColor();
         }
-        static Player GetLoser()
+        public static Player GetWinner()
         {
-            if (player1.HasNoMoreViableMoves() && player2.HasNoMoreViableMoves()) // both players don't have any viable moves on this turn and we must compare their score to decide the winner
-            {
-                if (player1.Score > player2.Score) return player2;
-                else if (player2.Score > player1.Score) return player1;
-                else return null;
-            }
-
-            if (player2.HasNoMoreViableMoves()) return player2;// the second player is stuck
-            else if (player1.HasNoMoreViableMoves()) return player1;// the first player is stuck
-
-            else return null;// this code should never be reached
+            Player winner = players.Where(p => !p.Surrendered).OrderByDescending(p => p.Score).FirstOrDefault();
+            winner.Wins++;
+            return winner;
         }
-        static bool GameHasFinished()
+        public static void GetPlayersCount()
         {
-            if (player1.HasNoMoreViableMoves() || player2.HasNoMoreViableMoves()) return true;
-            else return false;
-        }
-        static Player GetWinner()
-        {
-            if (player1.HasNoMoreViableMoves() && player2.HasNoMoreViableMoves()) // both players don't have any viable moves on this turn and we must compare their score to decide the winner
+            Console.WriteLine("WELCOME TO MATHTRICKS");
+            Console.WriteLine("Number of players:  (2/4)");
+            Console.WriteLine("Initial score:  (0-9)");
+            Console.SetCursorPosition(18, 1);
+
+            while (!int.TryParse(Console.ReadLine(), out playersCount) || (playersCount != 2 && playersCount != 4))
             {
-                if (player1.Score > player2.Score) { player1.Wins++; return player1; }
-                else if (player2.Score > player1.Score) { player2.Wins++; return player2; }
-                else return null;
+                Console.SetCursorPosition(18, 1);
+                Console.Write("  (2/4)" + new string(' ', 50));
+                Console.SetCursorPosition(18, 1);
             }
-
-            if (player2.HasNoMoreViableMoves()) { player1.Wins++; return player1; }// the second player is stuck
-            else if (player1.HasNoMoreViableMoves()) { player2.Wins++; return player2; }// the first player is stuck
-
-            else return null;// this code should never be reached
+        }
+        public static void GetPlayersInitialScore()
+        {
+            Console.SetCursorPosition(14, 2);
+            while (!int.TryParse(Console.ReadLine(), out initialScore) || initialScore < 0 || initialScore > 9)
+            {
+                Console.SetCursorPosition(14, 2);
+                Console.Write("  (0-9)" + new string(' ', 50));
+                Console.SetCursorPosition(14, 2);
+            }
+        }
+        public static void RegistratePlayers()
+        {
+            ConsoleColor color;
+            string name;
+            for (int i = 1; i <= playersCount; i++)
+            {
+                Console.Clear();
+                Console.WriteLine($"WELCOME PLAYER {i}");
+                Console.WriteLine("Name: ");
+                Console.WriteLine("Color: ");
+                Console.SetCursorPosition(5, 1);
+                name = Console.ReadLine();
+                Console.SetCursorPosition(6, 2);
+                while (!Enum.TryParse(Console.ReadLine(), true, out color))
+                {
+                    Console.SetCursorPosition(6, 2);
+                    Console.Write(new string(' ', 50));
+                    Console.SetCursorPosition(6, 2);
+                }
+                players.Add(new Player(name, color, initialScore));
+            }
         }
     }
 }

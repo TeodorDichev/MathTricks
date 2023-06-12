@@ -7,10 +7,12 @@ namespace MathTricks
     {
         private string name;
         private ConsoleColor color;
+
         private double score;
         private int wins;
         private Cell currCell;
         private Cell selectedCell;
+        private bool surrendered = false;
 
         public Player(string name, ConsoleColor color, double score)
         {
@@ -23,73 +25,77 @@ namespace MathTricks
         {
             return CurrCell.AdjeicentCells.All(x => x.Captured);
         }
-        public bool HasSurrendered(ConsoleKey key)
+        public void TakeTurn(ConsoleKey key)
         {
-            return key == ConsoleKey.Escape;
-        }
-        public bool TakeTurn(ConsoleKey key)
-        {
+            while (!IsCommandCorrect(key)) key = Console.ReadKey(true).Key;
+            if (key == ConsoleKey.Escape) { Surrendered = true; return; }
+
             switch (key)
             {
                 case ConsoleKey.NumPad1://left down diagonal
                     SelectedCell = CurrCell.AdjeicentCells
                         .FirstOrDefault(x => x.Width == CurrCell.Width - 5 && x.Height == CurrCell.Height + 2);
-
-                    if (Move()) return true;
-                    else return false;
+                    if (IsMoveValid()) { MoveToSelectedCell(); return; }
+                    else { TakeTurn(Console.ReadKey(true).Key); return; }
 
                 case ConsoleKey.NumPad2://down straight
                     SelectedCell = CurrCell.AdjeicentCells
                         .FirstOrDefault(x => x.Width == CurrCell.Width && x.Height == CurrCell.Height + 2);
-
-                    if (Move()) return true;
-                    else return false;
+                    if (IsMoveValid()) { MoveToSelectedCell(); return; }
+                    else { TakeTurn(Console.ReadKey(true).Key); return; }
 
                 case ConsoleKey.NumPad3://right down diagonal
                     SelectedCell = CurrCell.AdjeicentCells
                         .FirstOrDefault(x => x.Width == CurrCell.Width + 5 && x.Height == CurrCell.Height + 2);
-
-                    if (Move()) return true;
-                    else return false;
+                    if (IsMoveValid()) { MoveToSelectedCell(); return; }
+                    else { TakeTurn(Console.ReadKey(true).Key); return; }
 
                 case ConsoleKey.NumPad4://left side
                     SelectedCell = CurrCell.AdjeicentCells
                         .FirstOrDefault(x => x.Width == CurrCell.Width - 5 && x.Height == CurrCell.Height);
-
-                    if (Move()) return true;
-                    else return false;
+                    if (IsMoveValid()) { MoveToSelectedCell(); return; }
+                    else { TakeTurn(Console.ReadKey(true).Key); return; }
 
                 case ConsoleKey.NumPad6://right side
                     SelectedCell = CurrCell.AdjeicentCells
                         .FirstOrDefault(x => x.Width == CurrCell.Width + 5 && x.Height == CurrCell.Height);
-
-                    if (Move()) return true;
-                    else return false;
+                    if (IsMoveValid()) { MoveToSelectedCell(); return; }
+                    else { TakeTurn(Console.ReadKey(true).Key); return; }
 
                 case ConsoleKey.NumPad7://left up diagonal
                     SelectedCell = CurrCell.AdjeicentCells
                         .FirstOrDefault(x => x.Width == CurrCell.Width - 5 && x.Height == CurrCell.Height - 2);
-
-                    if (Move()) return true;
-                    else return false;
+                    if (IsMoveValid()) { MoveToSelectedCell(); return; }
+                    else { TakeTurn(Console.ReadKey(true).Key); return; }
 
                 case ConsoleKey.NumPad8://straight up
                     SelectedCell = CurrCell.AdjeicentCells
                         .FirstOrDefault(x => x.Width == CurrCell.Width && x.Height == CurrCell.Height - 2);
-
-                    if (Move()) return true;
-                    else return false;
+                    if (IsMoveValid()) { MoveToSelectedCell(); return; }
+                    else { TakeTurn(Console.ReadKey(true).Key); return; }
 
                 case ConsoleKey.NumPad9://right up diagonal
                     SelectedCell = CurrCell.AdjeicentCells
                         .FirstOrDefault(x => x.Width == CurrCell.Width + 5 && x.Height == CurrCell.Height - 2);
-
-                    if (Move()) return true;
-                    else return false;
+                    if (IsMoveValid()) { MoveToSelectedCell(); return; }
+                    else { TakeTurn(Console.ReadKey(true).Key); return; }
 
                 default:
-                    return false;
+                    return;
             }
+        }
+        private bool IsCommandCorrect(ConsoleKey key)
+        {
+            if (key == ConsoleKey.Escape ||
+                key == ConsoleKey.NumPad1 ||
+                key == ConsoleKey.NumPad2 ||
+                key == ConsoleKey.NumPad3 ||
+                key == ConsoleKey.NumPad4 ||
+                key == ConsoleKey.NumPad6 ||
+                key == ConsoleKey.NumPad7 ||
+                key == ConsoleKey.NumPad8 ||
+                key == ConsoleKey.NumPad9) return true;
+            else return false;
         }
         private void AdjustScore(char operation, int number)
         {
@@ -109,10 +115,13 @@ namespace MathTricks
                     break;
             }
         }
-        private bool Move()
+        private bool IsMoveValid()
         {
             if (SelectedCell is null || SelectedCell.Captured) return false;
-
+            else return true;
+        }
+        private void MoveToSelectedCell()
+        {
             Console.BackgroundColor = Color;
             Console.ForegroundColor = ConsoleColor.White;
             Console.SetCursorPosition(CurrCell.Width, CurrCell.Height);
@@ -126,14 +135,16 @@ namespace MathTricks
             SelectedCell.Captured = true;
             AdjustScore(SelectedCell.Operation, SelectedCell.Number);
             CurrCell = SelectedCell;
-            return true;
         }
         public void SetStartPosition(Cell cell)
         {
             Console.SetCursorPosition(cell.Width, cell.Height);
             CurrCell = cell;
+            cell.Captured = true;
+            cell.Number = Game.initialScore;
+            cell.Operation = '+';
             Console.BackgroundColor = Color;
-            Console.Write("p" + Name.Last());
+            Console.Write(Name.First().ToString() + Name.Last().ToString());
             Console.ResetColor();
         }
         public Cell CurrCell
@@ -155,6 +166,11 @@ namespace MathTricks
         {
             get { return score; }
             set { score = value; }
+        }
+        public bool Surrendered
+        {
+            get { return surrendered; }
+            set { surrendered = value; }
         }
         public string Name
         {

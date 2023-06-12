@@ -4,6 +4,9 @@
     {
         static void Main()
         {
+            Game.GetPlayersCount();
+            Game.GetPlayersInitialScore();
+            Game.RegistratePlayers();
             Game.Run();
         }
     }
