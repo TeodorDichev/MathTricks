@@ -12,6 +12,7 @@ namespace MathTricks
         private int wins;
         private Cell currCell;
         private Cell selectedCell;
+        private bool hasLost = false;
         private bool surrendered = false;
 
         public Player(string name, ConsoleColor color, double score)
@@ -135,6 +136,8 @@ namespace MathTricks
             SelectedCell.Captured = true;
             AdjustScore(SelectedCell.Operation, SelectedCell.Number);
             CurrCell = SelectedCell;
+
+            if (currCell.AdjeicentCells.All(c => c.Captured)) HasLost = true;
         }
         public void SetStartPosition(Cell cell)
         {
@@ -171,6 +174,11 @@ namespace MathTricks
         {
             get { return surrendered; }
             set { surrendered = value; }
+        }
+        public bool HasLost
+        {
+            get { return hasLost; }
+            set { hasLost = value; }
         }
         public string Name
         {

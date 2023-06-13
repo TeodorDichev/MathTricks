@@ -141,7 +141,7 @@ namespace MathTricks
         }
         public void FillGrid()
         {
-            string operations = "+-/*";
+            string operations = "+++--/*";
             Random r = new Random();
 
             for (int j = Height; j > 0; j--)
@@ -152,7 +152,7 @@ namespace MathTricks
                         1 + 2 * (Height - j),
                         false,
                         ConsoleColor.DarkGray,
-                        operations[r.Next(0, 4)],
+                        operations[r.Next(0, 7)],
                         r.Next(1, 6));
 
                     Cells.Add(cell);
@@ -161,7 +161,7 @@ namespace MathTricks
                     Console.ResetColor();
                 }
         }
-        public void AddPlayers(List<Player> players)
+        public void AddPlayers(Player[] players)
         {
             if (Game.playersCount == 2)
             {
